@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedAssist - Symptom Checker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style id="app-style">
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+      background-color: #f8fafc;
+    }
+    
+    .main-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+    
+    .title-gradient {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #3b82f6;
+      border: 1px solid #3b82f6;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .confidence-high {
+      color: #10b981;
+    }
+    
+    .confidence-medium {
+      color: #f59e0b;
+    }
+    
+    .confidence-low {
+      color: #ef4444;
+    }
+    
+    .history-item {
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .disclaimer-banner {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid #3b82f6;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .active-screen {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container p-4">
+    <!-- Header -->
+    <header class="flex justify-between items-center py-4 border-b border-gray-200 mb-6">
+      <div class="flex items-center">
+        <i class="fas fa-heartbeat text-3xl text-blue-600 mr-2"></i>
+        <h1 class="text-2xl font-bold title-gradient">MedAssist</h1>
+      </div>
+      <nav>
+        <button id="nav-home" class="px-3 py-1 text-blue-600 font-medium hover:bg-blue-50 rounded-md mr-2">Home</button>
+        <button id="nav-history" class="px-3 py-1 text-blue-600 font-medium hover:bg-blue-50 rounded-md">History</button>
+      </nav>
+    </header>
+    
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen active-screen">
+      <div class="text-center py-10">
+        <img src="./pic/portrait-3d-doctors-hospital-attire.jpg" alt="Doctor illustration" class="w-48 h-48 object-contain mx-auto mb-6">
+        <h2 class="text-3xl font-bold mb-4">Welcome to MedAssist</h2>
+        <p class="text-lg text-gray-600 mb-8 max-w-lg mx-auto">
+          A simple symptom checker to help you understand possible conditions based on your symptoms. Please note this is not a replacement for professional medical advice.
+        </p>
+        <button id="start-assessment" class="btn-primary text-lg font-semibold px-8 py-3 rounded-full">
+          Start Assessment
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div class="card bg-white p-6">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Symptom Analysis</h3>
+          <p class="text-gray-600">
+            Enter your symptoms and our system will analyze them to suggest possible conditions.
+          </p>
+        </div>
+        
+        <div class="card bg-white p-6">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-first-aid"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Treatment Guidance</h3>
+          <p class="text-gray-600">
+            Receive recommendations on whether self-care might help or if you should consult a doctor.
+          </p>
+        </div>
+        
+        <div class="card bg-white p-6">
+          <div class="text-blue-500 text-3xl mb-4">
+            <i class="fas fa-history"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Save Your History</h3>
+          <p class="text-gray-600">
+            Keep track of your symptom assessments over time for reference during medical visits.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="screen">
+      <h2 class="text-2xl font-bold mb-6">Symptom Assessment</h2>
+      <form id="symptom-form" class="card bg-white p-6">
+        <div class="mb-6">
+          <label for="symptom-description" class="block text-gray-700 font-medium mb-2">
+            Describe your symptoms
+          </label>
+          <textarea 
+            id="symptom-description"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            rows="3"
+            placeholder="Example: I have a headache, fever, and sore throat for the last 2 days"
+            required
+          ></textarea>
+        </div>
+        
+        <div class="mb-6">
+          <label for="symptom-category" class="block text-gray-700 font-medium mb-2">
+            Symptom Category
+          </label>
+          <select 
+            id="symptom-category"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a category (optional)</option>
+            <option value="respiratory">Respiratory (Breathing)</option>
+            <option value="digestive">Digestive (Stomach)</option>
+            <option value="neurological">Neurological (Brain/Nervous System)</option>
+            <option value="cardiovascular">Cardiovascular (Heart)</option>
+            <option value="musculoskeletal">Musculoskeletal (Muscles/Bones)</option>
+            <option value="dermatological">Dermatological (Skin)</option>
+            <option value="general">General (Fever, Fatigue, etc.)</option>
+          </select>
+        </div>
+        
+        <div class="mb-6">
+          <label class="block text-gray-700 font-medium mb-2">
+            Common Symptoms (Check all that apply)
+          </label>
+          <div class="max-h-64 overflow-y-auto p-3 border border-gray-300 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <!-- Respiratory -->
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="cough" name="symptoms" value="cough" class="mr-2">
+                <label for="cough">Cough</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="shortness-of-breath" name="symptoms" value="shortness-of-breath" class="mr-2">
+                <label for="shortness-of-breath">Shortness of breath</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="sore-throat" name="symptoms" value="sore-throat" class="mr-2">
+                <label for="sore-throat">Sore throat</label>
+              </div>
+              
+              <!-- Digestive -->
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="nausea" name="symptoms" value="nausea" class="mr-2">
+                <label for="nausea">Nausea</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="vomiting" name="symptoms" value="vomiting" class="mr-2">
+                <label for="vomiting">Vomiting</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="diarrhea" name="symptoms" value="diarrhea" class="mr-2">
+                <label for="diarrhea">Diarrhea</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="abdominal-pain" name="symptoms" value="abdominal-pain" class="mr-2">
+                <label for="abdominal-pain">Abdominal pain</label>
+              </div>
+              
+              <!-- Neurological -->
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="headache" name="symptoms" value="headache" class="mr-2">
+                <label for="headache">Headache</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="dizziness" name="symptoms" value="dizziness" class="mr-2">
+                <label for="dizziness">Dizziness</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="confusion" name="symptoms" value="confusion" class="mr-2">
+                <label for="confusion">Confusion</label>
+              </div>
+              
+              <!-- General -->
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="fever" name="symptoms" value="fever" class="mr-2">
+                <label for="fever">Fever</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="chills" name="symptoms" value="chills" class="mr-2">
+                <label for="chills">Chills</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="fatigue" name="symptoms" value="fatigue" class="mr-2">
+                <label for="fatigue">Fatigue</label>
+              </div>
+              <div class="mb-2 flex items-center">
+                <input type="checkbox" id="muscle-aches" name="symptoms" value="muscle-aches" class="mr-2">
+                <label for="muscle-aches">Muscle aches</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-primary font-semibold px-6 py-2 rounded-lg w-full">
+          Submit Assessment
+        </button>
+      </form>
+    </div>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen">
+      <div class="text-center py-16">
+        <div class="spinner"></div>
+        <p class="text-lg text-gray-600 mt-4">Analyzing your symptoms...</p>
+      </div>
+    </div>
+    
+    <!-- Results Screen -->
+    <div id="results-screen" class="screen">
+      <h2 class="text-2xl font-bold mb-6">Assessment Results</h2>
+      
+      <div class="disclaimer-banner p-4 mb-6 rounded-md">
+        <div class="flex items-start">
+          <i class="fas fa-exclamation-triangle text-amber-500 mr-3 mt-1"></i>
+          <p class="text-sm">
+            <strong>Medical Disclaimer:</strong> This assessment is for informational purposes only and does not constitute medical advice, diagnosis, or treatment. Always consult with a healthcare professional for medical concerns.
+          </p>
+        </div>
+      </div>
+      
+      <div id="results-container">
+        <!-- Results will be populated here -->
+      </div>
+      
+      <div class="flex flex-col sm:flex-row gap-4 mt-8">
+        <button id="save-history" class="btn-secondary font-semibold px-6 py-2 rounded-lg flex-1">
+          <i class="fas fa-save mr-2"></i> Save to History
+        </button>
+        <button id="start-over" class="btn-primary font-semibold px-6 py-2 rounded-lg flex-1">
+          Start Over
+        </button>
+      </div>
+    </div>
+    
+    <!-- History Screen -->
+    <div id="history-screen" class="screen">
+      <h2 class="text-2xl font-bold mb-6">Assessment History</h2>
+      
+      <div id="history-container" class="space-y-4">
+        <div class="text-center py-8 text-gray-500" id="no-history">
+          <i class="fas fa-history text-4xl mb-3"></i>
+          <p>No assessment history found.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="app-script">
+    // Sample conditions database (in a real app, this would be more extensive)
+    const conditionsDatabase = [
+      {
+        id: 1,
+        name: "Common Cold",
+        symptoms: ["cough", "sore-throat", "fever", "headache", "fatigue"],
+        advice: "Rest, drink fluids, and take over-the-counter cold medications as needed. Consult a doctor if symptoms worsen or persist beyond a week.",
+        selfCare: true
+      },
+      {
+        id: 2,
+        name: "Influenza (Flu)",
+        symptoms: ["fever", "chills", "muscle-aches", "fatigue", "cough", "headache"],
+        advice: "Rest, stay hydrated, and take fever reducers like acetaminophen. Contact a doctor if symptoms are severe or if you're in a high-risk group.",
+        selfCare: true
+      },
+      {
+        id: 3,
+        name: "Gastroenteritis (Stomach Flu)",
+        symptoms: ["nausea", "vomiting", "diarrhea", "abdominal-pain", "fever"],
+        advice: "Stay hydrated with small sips of water or electrolyte solutions. Eat bland foods when you feel able. Contact a doctor if symptoms persist beyond 2 days or if dehydration occurs.",
+        selfCare: true
+      },
+      {
+        id: 4,
+        name: "Migraine",
+        symptoms: ["headache", "nausea", "dizziness"],
+        advice: "Rest in a dark, quiet room. Use over-the-counter pain relievers. Consider prescription medications if migraines are frequent or severe.",
+        selfCare: true
+      },
+      {
+        id: 5,
+        name: "Pneumonia",
+        symptoms: ["cough", "fever", "shortness-of-breath", "chills", "fatigue"],
+        advice: "Consult a doctor immediately. Pneumonia requires medical evaluation and may need antibiotics or other treatments depending on severity.",
+        selfCare: false
+      },
+      {
+        id: 6,
+        name: "Anxiety Attack",
+        symptoms: ["shortness-of-breath", "dizziness", "confusion", "headache"],
+        advice: "Practice deep breathing exercises and relaxation techniques. Consider speaking with a mental health professional if anxiety is recurring.",
+        selfCare: true
+      },
+      {
+        id: 7,
+        name: "Food Poisoning",
+        symptoms: ["nausea", "vomiting", "diarrhea", "abdominal-pain"],
+        advice: "Stay hydrated and rest. Symptoms typically improve within 1-2 days. Seek medical attention if symptoms are severe or persist longer.",
+        selfCare: true
+      },
+      {
+        id: 8,
+        name: "Appendicitis",
+        symptoms: ["abdominal-pain", "nausea", "vomiting", "fever"],
+        advice: "Seek emergency medical attention immediately. Appendicitis requires urgent medical evaluation and likely surgery.",
+        selfCare: false
+      }
+    ];
+
+    // DOM Elements
+    const screens = {
+      home: document.getElementById('home-screen'),
+      assessment: document.getElementById('assessment-screen'),
+      loading: document.getElementById('loading-screen'),
+      results: document.getElementById('results-screen'),
+      history: document.getElementById('history-screen')
+    };
+
+    const buttons = {
+      startAssessment: document.getElementById('start-assessment'),
+      submitAssessment: document.getElementById('symptom-form'),
+      saveHistory: document.getElementById('save-history'),
+      startOver: document.getElementById('start-over'),
+      navHome: document.getElementById('nav-home'),
+      navHistory: document.getElementById('nav-history')
+    };
+
+    const resultsContainer = document.getElementById('results-container');
+    const historyContainer = document.getElementById('history-container');
+    const noHistoryMessage = document.getElementById('no-history');
+
+    // Navigation functions
+    function showScreen(screenName) {
+      Object.entries(screens).forEach(([name, screen]) => {
+        if (name === screenName) {
+          screen.classList.add('active-screen');
+        } else {
+          screen.classList.remove('active-screen');
+        }
+      });
+    }
+
+    // Event Listeners
+    buttons.startAssessment.addEventListener('click', () => {
+      showScreen('assessment');
+    });
+
+    buttons.submitAssessment.addEventListener('submit', (e) => {
+      e.preventDefault();
+      showScreen('loading');
+      
+      // Simulate processing delay
+      setTimeout(() => {
+        processSymptoms();
+      }, 1500);
+    });
+
+    buttons.saveHistory.addEventListener('click', saveToHistory);
+    buttons.startOver.addEventListener('click', () => showScreen('home'));
+    buttons.navHome.addEventListener('click', () => showScreen('home'));
+    buttons.navHistory.addEventListener('click', () => {
+      loadHistory();
+      showScreen('history');
+    });
+
+    // Process symptoms and generate results
+    function processSymptoms() {
+      const description = document.getElementById('symptom-description').value;
+      const category = document.getElementById('symptom-category').value;
+      const checkedSymptoms = Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value);
+      
+      // Find matching conditions based on symptoms
+      const results = findMatchingConditions(checkedSymptoms);
+      
+      // Display results
+      displayResults(results, description, category, checkedSymptoms);
+      
+      showScreen('results');
+    }
+
+    // Find conditions that match the symptoms
+    function findMatchingConditions(symptoms) {
+      const matches = [];
+      
+      conditionsDatabase.forEach(condition => {
+        // Count matching symptoms
+        const matchingSymptoms = condition.symptoms.filter(s => symptoms.includes(s));
+        const matchRatio = matchingSymptoms.length / condition.symptoms.length;
+        
+        if (matchRatio > 0) {
+          matches.push({
+            ...condition,
+            matchScore: matchRatio,
+            matchingSymptoms
+          });
+        }
+      });
+      
+      // Sort by match score (descending)
+      return matches.sort((a, b) => b.matchScore - a.matchScore).slice(0, 3);
+    }
+
+    // Display results on the screen
+    function displayResults(results, description, category, symptoms) {
+      if (results.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="card bg-white p-6 mb-4">
+            <p class="text-center text-gray-600">
+              No conditions match your symptoms. If you're concerned, please consult a healthcare professional.
+            </p>
+          </div>
+        `;
+        return;
+      }
+      
+      let resultsHTML = '';
+      
+      results.forEach((result, index) => {
+        const confidenceClass = result.matchScore > 0.7 ? 'confidence-high' : 
+                               result.matchScore > 0.4 ? 'confidence-medium' : 'confidence-low';
+        
+        const confidencePercentage = Math.round(result.matchScore * 100);
+        
+        resultsHTML += `
+          <div class="card bg-white p-6 mb-4">
+            <div class="flex justify-between items-start">
+              <h3 class="text-xl font-semibold">${result.name}</h3>
+              <span class="text-sm font-medium ${confidenceClass}">
+                ${confidencePercentage}% match
+              </span>
+            </div>
+            <div class="text-sm text-gray-600 mt-2">
+              <p><strong>Matching symptoms:</strong> ${result.matchingSymptoms.map(s => s.replace('-', ' ')).join(', ')}</p>
+            </div>
+            <div class="mt-4 p-3 bg-gray-50 rounded-md">
+              <div class="flex items-center mb-2">
+                <i class="fas ${result.selfCare ? 'fa-home text-green-500' : 'fa-hospital text-red-500'} mr-2"></i>
+                <span class="font-medium">${result.selfCare ? 'Self-care may be appropriate' : 'Medical consultation recommended'}</span>
+              </div>
+              <p>${result.advice}</p>
+            </div>
+          </div>
+        `;
+      });
+      
+      resultsContainer.innerHTML = resultsHTML;
+    }
+
+    // Save assessment to history
+    function saveToHistory() {
+      const description = document.getElementById('symptom-description').value;
+      const category = document.getElementById('symptom-category').value;
+      const checkedSymptoms = Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(cb => cb.value);
+      
+      const historyItem = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        description,
+        category,
+        symptoms: checkedSymptoms,
+        results: Array.from(resultsContainer.querySelectorAll('.card')).map(card => {
+          return {
+            name: card.querySelector('h3').textContent,
+            confidence: card.querySelector('span').textContent
+          };
+        })
+      };
+      
+      // Get existing history or initialize empty array
+      const history = JSON.parse(localStorage.getItem('medAssistHistory') || '[]');
+      history.push(historyItem);
+      
+      // Save back to localStorage
+      localStorage.setItem('medAssistHistory', JSON.stringify(history));
+      
+      alert('Assessment saved to history!');
+    }
+
+    // Load history from localStorage
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem('medAssistHistory') || '[]');
+      
+      if (history.length === 0) {
+        noHistoryMessage.style.display = 'block';
+        return;
+      }
+      
+      noHistoryMessage.style.display = 'none';
+      
+      let historyHTML = '';
+      
+      // Sort by date (most recent first)
+      history.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+        const date = new Date(item.date).toLocaleDateString();
+        const time = new Date(item.date).toLocaleTimeString();
+        
+        historyHTML += `
+          <div class="history-item card bg-white p-4 pl-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-medium">${date} at ${time}</h3>
+                <p class="text-sm text-gray-600 mt-1">${item.description.substring(0, 60)}${item.description.length > 60 ? '...' : ''}</p>
+              </div>
+              <button class="text-blue-500 hover:text-blue-700" onclick="toggleHistoryDetail('${item.id}')">
+                <i class="fas fa-chevron-down" id="icon-${item.id}"></i>
+              </button>
+            </div>
+            <div class="history-detail hidden mt-4 pt-4 border-t border-gray-100" id="detail-${item.id}">
+              <p><strong>Symptoms:</strong> ${item.symptoms.map(s => s.replace('-', ' ')).join(', ') || 'None selected'}</p>
+              <div class="mt-3">
+                <strong>Results:</strong>
+                <ul class="mt-1 ml-5 list-disc">
+                  ${item.results.map(r => `<li>${r.name} (${r.confidence})</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      historyContainer.innerHTML = historyHTML;
+    }
+
+    // Toggle history item detail visibility
+    window.toggleHistoryDetail = function(id) {
+      const detailElement = document.getElementById(`detail-${id}`);
+      const iconElement = document.getElementById(`icon-${id}`);
+      
+      if (detailElement.classList.contains('hidden')) {
+        detailElement.classList.remove('hidden');
+        iconElement.classList.remove('fa-chevron-down');
+        iconElement.classList.add('fa-chevron-up');
+      } else {
+        detailElement.classList.add('hidden');
+        iconElement.classList.remove('fa-chevron-up');
+        iconElement.classList.add('fa-chevron-down');
+      }
+    };
+  </script>
+</body>
+</html>
